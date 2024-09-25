@@ -29,7 +29,13 @@ export type InteractiveGridStateAction = { type: 0, items: InteractiveGridItem[]
         itemId: string | number;
         delta: { x: number; y: number };
     }
-};
+} | {
+    type: 3, payload: {
+        id: string | number;
+        width: number;
+        height: number;
+    }
+};;
 
 export const InteractiveGridContext = createContext<{
     state: InteractiveGridState;
@@ -62,6 +68,18 @@ const getNewItemGridPosition = (origin: { x: number, y: number }, delta: { x: nu
     return { x: gridX, y: gridY };
 }
 
+const getNewItemGridSize = (width: number, height: number,  gridLayout: InteractiveGridLayout) => {
+    if (gridLayout.cellWidth === 0 || gridLayout.cellHeight === 0)
+        return { w: 1, h: 1};
+  const newWidth = Math.round(width / (gridLayout.cellWidth ?? 1));
+  const newHeight = Math.round(height / (gridLayout.cellHeight ?? 1));
+  
+  return {
+      w: newWidth,
+      h: newHeight,
+  }
+};
+
 /* Functions End */
 const gridReducer = (state: InteractiveGridState = initialState, action: InteractiveGridStateAction): InteractiveGridState => {
     if (action.type === 0) {
@@ -72,7 +90,6 @@ const gridReducer = (state: InteractiveGridState = initialState, action: Interac
     }
     if (action.type === 2) {
         const item = state.gridItems.find(y => y.id === action.payload.itemId);
-        console.log(item);
         if (item) {
             const newState = {
                 ...state, 
@@ -80,6 +97,23 @@ const gridReducer = (state: InteractiveGridState = initialState, action: Interac
                     if (y.id === action.payload.itemId) {
                         const newGridDestination = getNewItemGridPosition({...getItemPosition(y, state.gridLayout)}, {...action.payload.delta}, state.gridLayout);
                         return {...y, layout: {...y.layout, ...newGridDestination}};
+                    }
+                    return y;
+                })],
+                isDirty: true
+            };
+            return newState;
+        }
+    }
+    if (action.type === 3) {
+        const item = state.gridItems.find(y => y.id === action.payload.id);
+        if (item) {
+            const newState = {
+                ...state,
+                gridItems: [...state.gridItems.map(y => {
+                    if (y.id === action.payload.id) {
+                        const newSize = getNewItemGridSize(action.payload.width, action.payload.height, state.gridLayout);
+                        return {...y, layout: {...y.layout, ...newSize}};
                     }
                     return y;
                 })],
@@ -110,7 +144,16 @@ const InteractiveGridProvider = ({ children, onChange }: {children: ReactNode; o
                 }
             });
         }}>
-            <InteractiveGridResizeProvider>
+            <InteractiveGridResizeProvider onChange={(id, width, height) => {
+                dispatch({
+                   type: 3,
+                   payload:  {
+                       id,
+                       width,
+                       height
+                   }
+                });
+            }}>
                 <InteractiveGridContext.Provider
                     value={{
                         state: state,

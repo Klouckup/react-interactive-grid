@@ -1,4 +1,4 @@
-﻿import {createContext, Dispatch, MouseEventHandler, ReactNode, useContext, useReducer} from "react";
+﻿import {createContext, Dispatch, MouseEventHandler, ReactNode, useContext, useEffect, useReducer} from "react";
 
 export const InteractiveGridResizeContext = createContext<{
     dispatch: Dispatch<InteractiveCurrentResize>;
@@ -52,13 +52,23 @@ const resizeReducer = (state: InteractiveGridResizeState, action: InteractiveCur
     return state;
 };
 
-const InteractiveGridResizeProvider = ({ children }: { children: ReactNode; onChange?: () => void; }) => {
+const InteractiveGridResizeProvider = ({ children, onResizing, onChange }: { children: ReactNode; onChange?: (id: string | number, width: number, height: number) => void; onResizing?: (isResizing: boolean) => void; }) => {
     const [state, dispatch] = useReducer(resizeReducer, initialState);
 
-    const stopResize: MouseEventHandler<HTMLDivElement> = () => {
-        dispatch({
-           active: false
-        });
+    useEffect(() => {
+        onResizing?.(state.currentResize.active);
+    }, [onResizing, state.currentResize.active]);
+    
+    const stopResize: MouseEventHandler<HTMLDivElement> = (e) => {
+        if (state.currentResize.active) {
+            if (state.currentResize.id && state.currentResize.w  && state.currentResize.h)
+             onChange?.(state.currentResize.id, state.currentResize.w, state.currentResize.h);
+            dispatch({
+                active: false,
+            });
+            e.stopPropagation();
+            e.preventDefault();
+        }
     };
 
     const resizeFrame: MouseEventHandler<HTMLDivElement> = (e) => {
@@ -69,7 +79,7 @@ const InteractiveGridResizeProvider = ({ children }: { children: ReactNode; onCh
             const xDiff = Math.abs(x - e.clientX);
             const yDiff = Math.abs(y - e.clientY);
             const newW = x > e.clientX ? w - xDiff : w + xDiff;
-            const newH = y > e.clientY ? h + yDiff : h - yDiff;
+            const newH = y > e.clientY ? h - yDiff : h + yDiff;
 
             dispatch({
                 ...state.currentResize, 
@@ -97,27 +107,26 @@ const InteractiveGridResizeProvider = ({ children }: { children: ReactNode; onCh
     )
 }
 
-export const useResizable = ({ id }: { id: string | number; }) => {
+export const useResizable = ({ id, width, height }: { id: string | number; width: number; height: number }) => {
     const context = useContext(InteractiveGridResizeContext);
     if (!context) {
         throw new Error('useInteractiveGrid Hook must be used within the interactive grid provider');
     }
     
     const onStartResize: MouseEventHandler = (e) => {
-        e.stopPropagation();
-        e.preventDefault();
         context.dispatch({
             active: true,
             id: id, 
             x: e.clientX,
             y: e.clientY,
-            w: e.currentTarget.clientWidth,
-            h: e.currentTarget.clientHeight,
-        })
-
+            w: width,
+            h: height,
+        });
+        e.stopPropagation();
+        e.preventDefault();
     };
     
-    return { onStartResize, isResizing: context.state.currentResize.id === id, size: { width: context.state.currentResize.w, height: context.state.currentResize.h } };
+    return { onStartResize, isResizing: context.state.currentResize.id === id && context.state.currentResize.active, size: { width: context.state.currentResize.w, height: context.state.currentResize.h } };
 }
 
 
