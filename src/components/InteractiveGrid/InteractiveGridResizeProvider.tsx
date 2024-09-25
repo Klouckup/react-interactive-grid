@@ -100,7 +100,7 @@ const InteractiveGridResizeProvider = ({ children, onResizing, onChange }: { chi
                 state: state, 
                 dispatch: dispatch
             }}>
-        <div onMouseMove={resizeFrame} onMouseUp={stopResize}>
+        <div style={{ width: '100%', height: '100%' }} onMouseMove={resizeFrame} onMouseUp={stopResize}>
             {children}
         </div>
         </InteractiveGridResizeContext.Provider>
