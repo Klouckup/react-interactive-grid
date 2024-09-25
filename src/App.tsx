@@ -20,8 +20,8 @@ function App() {
             layout: {
                 h: 2,
                 w: 1,
-                y: 1,
-                x: 1
+                y: 0,
+                x: 0
             }
         }
     ]);
@@ -29,7 +29,7 @@ function App() {
   return (
       <InteractiveGridProvider onChange={(items) => { console.log('item-update', items); setComponents([...items]) }}>
           <div style={{ width: '100vw', height: '300px'}}>
-            <InteractiveGrid options={{ columns: 12, rows: 12, margin: [0, 0] }} items={components} />
+            <InteractiveGrid options={{ columns: 12, rows: 6, margin: [0, 0] }} items={components} />
           </div>
       </InteractiveGridProvider>
   )

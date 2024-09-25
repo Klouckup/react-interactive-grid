@@ -80,9 +80,97 @@ const getNewItemGridSize = (width: number, height: number,  gridLayout: Interact
   }
 };
 
+const reorderGridItems = (gridItems: InteractiveGridItem[], gridLayout: InteractiveGridLayout): InteractiveGridItem[] =>  {
+    // Copy the original grid items to avoid mutating the input.
+    const items = [...gridItems];
+    const gridWidth = gridLayout.columns ?? 1;
+    const gridHeight = gridLayout.rows ?? 1;
+
+    // Sort the items by their y and then x position.
+    items.sort((a, b) => a.layout.y === b.layout.y ? a.layout.x - b.layout.x : a.layout.y - b.layout.y);
+
+    // This will store the cells that are occupied in the grid.
+    const occupiedCells = new Set<string>();
+
+    // Function to check if a position is free.
+    function isPositionFree(x: number, y: number, w: number, h: number): boolean {
+        for (let i = x; i < x + w; i++) {
+            for (let j = y; j < y + h; j++) {
+                if (occupiedCells.has(`${i},${j}`)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    // Function to occupy cells in the grid.
+    function occupyPosition(x: number, y: number, w: number, h: number) {
+        for (let i = x; i < x + w; i++) {
+            for (let j = y; j < y + h; j++) {
+                occupiedCells.add(`${i},${j}`);
+            }
+        }
+    }
+
+    // Reorder and resolve collisions.
+    for (const item of items) {
+        let { x, y } = item.layout;
+        const { w, h } = item.layout;
+
+        // Check if the current position is occupied.
+        if (!isPositionFree(x, y, w, h)) {
+            // Find the next available position.
+            let newX = x;
+            let newY = y;
+            let found = false;
+
+            // Search downwards for the next available position.
+            while (!found) {
+                if (newX + w > gridWidth) {
+                    // Move to the next row.
+                    newX = 0;
+                    newY++;
+                }
+
+                if (isPositionFree(newX, newY, w, h)) {
+                    found = true;
+                    x = newX;
+                    y = newY;
+                } else {
+                    newX++; // Move right in the same row.
+                }
+
+                // Check if the item has fallen off the grid.
+                if (newY > 100) { // Arbitrary large number, indicates out of bounds.
+                    console.warn(`Item ${item.id} could not be placed within the grid and will be removed.`);
+                    x = -1;
+                    y = -1;
+                    break;
+                }
+            }
+        }
+
+        // If item is out of bounds, skip it.
+        if (x >= 0 && y >= 0) {
+            // Update the item's layout.
+            item.layout.x = x;
+            item.layout.y = y;
+
+            // Occupy the cells in the grid.
+            occupyPosition(x, y, w, h);
+        }
+    }
+
+    // Return items that are within the grid boundaries.
+    return items.filter(item => item.layout.x >= 0 && item.layout.y >= 0 && item.layout.x <= gridWidth && item.layout.y <= gridHeight);
+}
+
 /* Functions End */
 const gridReducer = (state: InteractiveGridState = initialState, action: InteractiveGridStateAction): InteractiveGridState => {
     if (action.type === 0) {
+        if (state.gridItems.length === 0)
+            return {...state,  gridItems: [...reorderGridItems(action.items, state.gridLayout)],  isDirty: false }
         return {...state, gridItems: [...action.items], isDirty: false}
     }
     if (action.type === 1) {
@@ -102,6 +190,8 @@ const gridReducer = (state: InteractiveGridState = initialState, action: Interac
                 })],
                 isDirty: true
             };
+            newState.gridItems = reorderGridItems(newState.gridItems, state.gridLayout);
+            
             return newState;
         }
     }
@@ -119,6 +209,7 @@ const gridReducer = (state: InteractiveGridState = initialState, action: Interac
                 })],
                 isDirty: true
             };
+            newState.gridItems = reorderGridItems(newState.gridItems, state.gridLayout);
             return newState;
         }
     }

@@ -1,4 +1,4 @@
-﻿import {useEffect, useMemo, useRef, useState} from "react";
+﻿import {useEffect, useMemo, useRef} from "react";
 import {useDraggable, useDroppable} from "@dnd-kit/core";
 import {CSS} from '@dnd-kit/utilities';
 import {useInteractiveGrid} from "./InteractiveGridProvider.tsx";
@@ -118,8 +118,6 @@ const InteractiveGridItem = ({
     id, layout,
                      gridLayout        }: InteractiveGridItemProps) => {
     
-    const [disableDrag, setDisableDrag] = useState(false);
-    
     const { width, height } = useMemo(() => {
         return {
             width: layout.w * (gridLayout.cellWidth ?? 0),
@@ -141,7 +139,6 @@ const InteractiveGridItem = ({
         data: { 
             layout
         },
-        disabled: disableDrag
     })
     /* end dnd kit */
     
