@@ -1,0 +1,8 @@
+body {
+    margin: 0;
+}
+
+.interactive-grid-cell {
+    border: 1px solid black;
+    background: #555;
+}
