@@ -1,7 +1,6 @@
 import './App.css'
-import {InteractiveGrid, InteractiveGridItem} from "./components/InteractiveGrid.tsx";
-import {useState} from "react";
-import InteractiveGridProvider from "./components/InteractiveGridProvider.tsx";
+import { useState } from "react";
+import { InteractiveGrid, InteractiveGridItem, InteractiveGridProvider } from "./components/InteractiveGrid";
 
 function App() {
     

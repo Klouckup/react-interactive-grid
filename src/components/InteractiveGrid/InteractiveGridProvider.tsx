@@ -1,6 +1,7 @@
 ﻿import {createContext, Dispatch, ReactNode, useContext, useEffect, useReducer} from "react";
 import {DndContext} from "@dnd-kit/core";
-import {InteractiveGridItem, InteractiveGridLayout} from "./InteractiveGrid.tsx";
+import {InteractiveGridLayout} from "./InteractiveGrid.tsx";
+import { InteractiveGridItem } from "./InteractiveGridItem.tsx";
 import InteractiveGridResizeProvider from "./InteractiveGridResizeProvider.tsx";
 
 
