@@ -27,7 +27,7 @@ function App() {
     ]);
 
   return (
-      <InteractiveGridProvider onChange={(items) => { console.log('item-update', items); setComponents([...items]) }}>
+      <InteractiveGridProvider onChange={(items) => { setComponents([...items]) }}>
           <div style={{ width: '100vw', height: '300px'}}>
             <InteractiveGrid options={{ columns: 12, rows: 6, margin: [0, 0] }} items={components} />
           </div>

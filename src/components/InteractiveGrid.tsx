@@ -51,8 +51,6 @@ export const InteractiveGrid = ({
         const cellWidth = width / columns - 2 * marginX;
         const cellHeight = height / rows - 2 * marginY;
         
-        console.log(cellWidth);
-        
         return {
             columns,
             rows,
