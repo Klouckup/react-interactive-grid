@@ -1,6 +1,7 @@
 ﻿import {createContext, Dispatch, ReactNode, useContext, useEffect, useReducer} from "react";
 import {DndContext} from "@dnd-kit/core";
 import {InteractiveGridItem, InteractiveGridLayout} from "./InteractiveGrid.tsx";
+import InteractiveGridResizeProvider from "./InteractiveGridResizeProvider.tsx";
 
 
 export type InteractiveGridState = {
@@ -101,8 +102,6 @@ const InteractiveGridProvider = ({ children, onChange }: {children: ReactNode; o
     
     return (
         <DndContext onDragEnd={(event) => {
-            console.log(event);
-            console.log(event.delta)
             dispatch({
                 type: 2,
                 payload: {
@@ -111,13 +110,15 @@ const InteractiveGridProvider = ({ children, onChange }: {children: ReactNode; o
                 }
             });
         }}>
-            <InteractiveGridContext.Provider
-                value={{
-                    state: state,
-                    dispatch: dispatch
-                }}>
-                {children}
-            </InteractiveGridContext.Provider>
+            <InteractiveGridResizeProvider>
+                <InteractiveGridContext.Provider
+                    value={{
+                        state: state,
+                        dispatch: dispatch
+                    }}>
+                    {children}
+                </InteractiveGridContext.Provider>
+            </InteractiveGridResizeProvider>
         </DndContext>
     )
 }

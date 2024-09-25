@@ -2,6 +2,7 @@
 import {useDraggable, useDroppable} from "@dnd-kit/core";
 import {CSS} from '@dnd-kit/utilities';
 import {useInteractiveGrid} from "./InteractiveGridProvider.tsx";
+import {useResizable} from "./InteractiveGridResizeProvider.tsx";
 
 export type InteractiveGridProps = {
   options?: InteractiveGridOptions;  
@@ -116,27 +117,35 @@ export type InteractiveGridLayout = {
 const InteractiveGridItem = ({
     id, layout,
                      gridLayout        }: InteractiveGridItemProps) => {
-    
+
+    /* resize */
+    const { size, isResizing, onStartResize } = useResizable({
+        id: id,
+    });
+    /* end resize */
     
     /* dnd kit */
     const { attributes, listeners, setNodeRef, transform } = useDraggable({
         id: id,
         data: { 
             layout
-        }
+        },
+        disabled: isResizing
     })
     /* end dnd kit */
+    
     
     return (
         <div ref={setNodeRef}
              {...attributes}
              {...listeners}
              style={{ background: 'red', position: 'absolute', top: `${layout.y * (gridLayout.cellHeight ?? 0)}px`, left: `${layout.x * (gridLayout.cellWidth ?? 0)}px`,
-            width: `${layout.w * (gridLayout.cellWidth ?? 0)}px`,
-            height: `${layout.h * (gridLayout.cellHeight ?? 0)}px`,
-        transform: CSS.Translate.toString(transform)}}>
-            <button>
-                
+            width: isResizing ? size.width : `${layout.w * (gridLayout.cellWidth ?? 0)}px`,
+            height: isResizing ? size.height : `${layout.h * (gridLayout.cellHeight ?? 0)}px`,
+        transform: CSS.Translate.toString(transform)}}
+           >
+            <button onMouseDown={onStartResize}>
+                test
             </button>
         </div>
     )
