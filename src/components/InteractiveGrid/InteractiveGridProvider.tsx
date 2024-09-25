@@ -36,7 +36,7 @@ export type InteractiveGridStateAction = { type: 0, items: InteractiveGridItem[]
         width: number;
         height: number;
     }
-};;
+};
 
 export const InteractiveGridContext = createContext<{
     state: InteractiveGridState;
